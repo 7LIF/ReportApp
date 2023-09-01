@@ -15,6 +15,20 @@
                 <p> Email: @reportbug.UserEmail</p>
                 <p>Time: @reportbug.Timestamp</p>
                 <p>Description: @reportbug.Description</p>
+                @if (reportbug.AttachmentId != 0)
+                {
+                    var attachmentsForFeedback = attachments.Where(a => a.AttachmentId == reportbug.AttachmentId).ToList();
+                    foreach (var attachment in attachmentsForFeedback)
+                    {
+
+                        <a href="https://localhost:7046/api/att/@attachment.FileName" target="_blank">
+
+                            <img src="https://localhost:7046/api/att/@attachment.FileName" alt="imagem servidor" />
+
+                        </a>
+
+                    }
+                }
             </div>
         }
     </div>
@@ -33,8 +47,23 @@
                 <p>Question2: @reportfeed.Question2</p>
                 <p>Question3: @reportfeed.Question3</p>
 
-                <img src="../../ReportApp.API/Attachments/{FileName}" alt="">
 
+
+
+                @if (reportfeed.AttachmentId != 0)
+                {
+                    var attachmentsForFeedback = attachments.Where(a => a.AttachmentId == reportfeed.AttachmentId).ToList();
+                    foreach (var attachment in attachmentsForFeedback)
+                    {
+
+                        <a href="https://localhost:7046/api/att/@attachment.FileName" target="_blank">
+
+                            <img src="https://localhost:7046/api/att/@attachment.FileName" alt="imagem servidor" />
+
+                        </a>
+
+                    }
+                }
             </div>
         }
     </div>
@@ -48,13 +77,18 @@
     [Inject]
     public IFeedbackDataService FeedbackDataService { get; set; }
 
+    [Inject]
+    public IAttachmentService AttachmentService { get; set; }
+
     private List<BugWithUserDetails> allreportbug = new List<BugWithUserDetails>();
     private List<FeedbackWithUserDetails> allreportfeed = new List<FeedbackWithUserDetails>();
+    private List<Attachments> attachments = new List<Attachments>();
 
     protected override async Task OnInitializedAsync()
     {
         allreportbug = (await BugReportDataService.GetAllBugReports()).ToList();
         allreportfeed = (await FeedbackDataService.GetAllFeedbacks()).ToList();
+        attachments = (await AttachmentService.GetAllAttachmentsAsync()).ToList();
     }
 }
 
@@ -76,5 +110,13 @@
     .itens {
         border: 1px solid #ccc;
         padding: 10px;
+    }
+
+    img {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 400px;
+        height: 220px;
     }
 </style>

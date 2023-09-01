@@ -9,13 +9,13 @@ namespace ReportApp.API.Controllers
     [ApiController]
     public class AttachmentController : ControllerBase
     {
-        
+
         private const string AttachmentsFolder = "Attachments";
         private readonly IAttachment _attachmentModel;
-   
-        public AttachmentController(IAttachment attachmentModel)
-        {
 
+        public AttachmentController(IAttachment attachmentModel, IWebHostEnvironment env)
+        {
+            _attachmentsFolderPath = Path.Combine(env.ContentRootPath, "Attachments");
             _attachmentModel = attachmentModel;
         }
         [HttpGet]
@@ -23,7 +23,7 @@ namespace ReportApp.API.Controllers
         {
             try
             {
-              
+
                 return Ok(_attachmentModel.GetAllAttachments());
             }
             catch (Exception ex)
@@ -31,23 +31,37 @@ namespace ReportApp.API.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
+        private readonly string _attachmentsFolderPath;
 
 
-        [HttpGet("{FileName}")]
+
+        [HttpGet("{fileName}")]
         public IActionResult GetAttachment(string fileName)
         {
-            // Construa o caminho completo para o arquivo com base no nome do arquivo fornecido.
-            string filePath = Path.Combine("CaminhoDaSuaPastaAttachments", fileName);
 
-            if (System.IO.File.Exists(filePath))
+            try
             {
-                // Lê o arquivo e retorna como uma resposta HTTP.
-                var fileStream = System.IO.File.OpenRead(filePath);
-                return File(fileStream, "image/jpeg"); // Altere o tipo MIME conforme necessário.
-            }
+                string filePath = Path.Combine(_attachmentsFolderPath, fileName);
 
-            return NotFound();
+
+
+
+                if (System.IO.File.Exists(filePath))
+                {
+                    var fileStream = System.IO.File.OpenRead(filePath);
+                    return File(fileStream, "image/jpeg");
+                }
+
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
         }
+
+
 
         //Focused controller for the files we will upload
         [HttpPost]
@@ -73,7 +87,7 @@ namespace ReportApp.API.Controllers
                     var attachment = new Attachments
                     {
                         FeedbackId = attachmentDto.FeedbackId,
-                        BugReportId = attachmentDto.BugReportId, 
+                        BugReportId = attachmentDto.BugReportId,
                         Base64data = attachmentDto.Base64data,
                         ContentType = attachmentDto.ContentType,
                         FileName = attachmentDto.FileName,
