@@ -3,13 +3,23 @@
 <!--blazor component with main button, menu and call to the Bug and feedback report-->
 <div class="sidebar">
 
-    <button class="btn @(showmenu == false && (showBugReportComponent == false && showFeedReportComponent == false) ? "btnfeed" : "active")" @onclick="ToggleMenu">
+    <button class="btn @(showmenu == false && (showScreenRecorderComponent == false && showBugReportComponent == false && showFeedReportComponent == false) ? "btnfeed" : "active")" @onclick="ToggleMenu">
         Feedback
     </button>
 
     @if (showmenu == true)
     {
         <div class="menu">
+
+            <div class="imenu" @onclick="QuickRecorder">
+                <span class="oi oi-document" />
+
+                <div>
+                    <h5>Screen Recording</h5>
+                    <small>Record the bug you found and send it to us</small>
+                </div>
+            </div>
+
             <div class="imenu" @onclick="QuickAddFeed">
                 <span class="oi oi-document" />
                     
@@ -17,18 +27,17 @@
                         <h5>General feedback</h5>
                         <small>Give general feedback of this page</small>
                     </div>
-               
             </div>
-            <div class="imenu" @onclick="QuickAddBug">
 
+            <div class="imenu" @onclick="QuickAddBug">
                 <span class="oi oi-bug" />
                 <div>
                     <h5>Report a bug</h5>
                     <small>Let us know what's broken</small>
                 </div>
-          
             </div>
             
+            <!--
             <div class="imenu">
                 <span class="oi oi-person" />
                 <div>
@@ -36,7 +45,7 @@
                     <small>Get in touch with us</small>
                 </div>
             </div>
-
+            -->
         </div>
    
 

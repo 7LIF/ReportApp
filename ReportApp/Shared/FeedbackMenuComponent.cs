@@ -11,6 +11,8 @@ namespace ReportApp.Shared
         //Dependencies
         public bool showmenu = false;
 
+        public bool showScreenRecorderComponent = false;
+
         public bool showBugReportComponent = false;
 
         public bool showFeedReportComponent = false;
@@ -38,7 +40,7 @@ namespace ReportApp.Shared
 
         protected async override Task OnInitializedAsync()
         {
-           var BugReports = (await BugReportDataService.GetAllBugReports()).ToList();
+            var BugReports = (await BugReportDataService.GetAllBugReports()).ToList();
 			var Feedbacks = (await FeedbackDataService.GetAllFeedbacks()).ToList();
         }
 
@@ -49,6 +51,7 @@ namespace ReportApp.Shared
          
             StateHasChanged();
         }
+
         public async void AddFeedReport_OnDialogClose()
         {
 			var Feedbacks = (await FeedbackDataService.GetAllFeedbacks()).ToList();
@@ -64,6 +67,18 @@ namespace ReportApp.Shared
             showBugReportComponent = false;
 
          showFeedReportComponent = false;
+        }
+
+        //show component screen recorder
+        protected async Task QuickRecorder()
+        {
+            StateHasChanged();
+            await Task.Delay(5);
+            showmenu = false;
+
+            showScreenRecorderComponent = true;
+            StateHasChanged();
+
         }
 
         //show component bug
@@ -84,6 +99,8 @@ namespace ReportApp.Shared
             AddBugReport.ShowAsync();
        
         }
+
+
         //show component feedback
         protected async Task QuickAddFeed()
         {
