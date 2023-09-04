@@ -15,7 +15,7 @@ namespace ReportApp.Components
 {
     public partial class AddScreenRecorder
     {
-        // Dependencies
+        // Dependências injetadas no componente
         [Inject]
         public IScreenRecorderService ScreenRecorderService { get; set; }
 
@@ -26,6 +26,7 @@ namespace ReportApp.Components
 
         private bool isShowing = false;
 
+        // Propriedade para controlar a visibilidade do componente
         public bool ShowScreenRecorder { get; set; } = false;
 
         [Inject]
@@ -35,7 +36,7 @@ namespace ReportApp.Components
         private bool downloadLinkVisible = false;
         private string downloadUrl = "";
         private ScreenCapture screenCapture;
-        private ElementReference previewElement; // Adicione uma referência ao elemento HTML
+        private ElementReference previewElement; // Referência ao elemento HTML
 
         private async Task Log(string msg)
         {
@@ -44,25 +45,27 @@ namespace ReportApp.Components
 
         private async Task StartRecording()
         {
+            // Inicia a gravação de tela usando a API de mídia do navegador
             var stream = await JSRuntime.InvokeAsync<IJSObjectReference>("navigator.mediaDevices.getDisplayMedia",
                 new { video = true, audio = true });
 
-            // Use 'previewElement' para acessar o ElementReference
+            // Inicia a gravação com a stream obtida
             await JSRuntime.InvokeVoidAsync("startRecording", stream, 10000, previewElement);
         }
 
         private async Task StopRecording()
         {
+            // Para a gravação em andamento
             await JSRuntime.InvokeVoidAsync("stopRecording", previewElement);
         }
 
         [JSInvokable]
         public void HandleRecordingData(byte[] data)
         {
-            // Lidar com os dados recebidos aqui
+            // Lida com os dados recebidos durante a gravação
             Log($"Received {data.Length} bytes of recorded data.");
 
-            // Quando a gravação estiver completa, permita que o usuário faça o download
+            // Quando a gravação estiver completa, permite que o usuário faça o download
             if (data.Length > 0)
             {
                 CreateBlobAndDownload(data);
@@ -73,15 +76,17 @@ namespace ReportApp.Components
         {
             if (data.Length > 0)
             {
+                // Cria um objeto Blob a partir dos dados gravados
                 var objectURL = await JSRuntime.InvokeAsync<string>("createBlobAndGetObjectURL", data, "video/webm");
                 downloadUrl = objectURL;
                 downloadLinkVisible = true;
             }
         }
 
-        // Methods for showing, closing, and resetting the component
+        // Métodos para mostrar, fechar e redefinir o componente
         public async Task ShowAsync()
         {
+            // Mostra o componente assíncronamente
             if (!isInitialized)
             {
                 return;
@@ -94,11 +99,15 @@ namespace ReportApp.Components
 
         private void ResetScreenCapture()
         {
-            screenCapture = new ScreenCapture { }; // Crie uma instância de ScreenCapture
+            // Reseta a captura de tela
+            screenCapture = new ScreenCapture { }; // Cria uma nova instância de ScreenCapture
         }
 
         public partial class ScreenCapture : ComponentBase
         {
+            [Parameter]
+            public EventCallback<bool> CloseEventCallback { get; set; }
+
             [Inject]
             private IJSRuntime JSRuntime { get; set; }
             public bool ShowScreenRecorder { get; private set; }
@@ -106,7 +115,7 @@ namespace ReportApp.Components
             private int recordingTimeMS = 10000;
             private bool firstRender = true;
 
-            // Custom method to force state update
+            // Método personalizado para forçar a atualização do estado
             public void Refresh()
             {
                 InvokeAsync(StateHasChanged);
@@ -117,18 +126,20 @@ namespace ReportApp.Components
                 if (this.firstRender)
                 {
                     this.firstRender = false;
+
+                    // Adiciona ouvintes de eventos para os botões de início e parada
                     await JSRuntime.InvokeVoidAsync("startButton.addEventListener", "click", DotNetObjectReference.Create(this));
                     await JSRuntime.InvokeVoidAsync("stopButton.addEventListener", "click", DotNetObjectReference.Create(this));
                 }
             }
 
-            public void Close()
+            public async void Close()
             {
+                // Fecha o componente e invoca o retorno de chamada
                 ShowScreenRecorder = false;
-
+                await CloseEventCallback.InvokeAsync(true);
                 StateHasChanged();
             }
-
         }
     }
 }
