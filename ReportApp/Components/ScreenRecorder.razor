@@ -1,81 +1,61 @@
-﻿@page "/ScreenRecorder"
-
-@inherits Microsoft.AspNetCore.Components.ComponentBase
+﻿@inherits Microsoft.AspNetCore.Components.ComponentBase
 @using ReportApp.Components
 @using static ReportApp.Components.AddScreenRecorder;
+@using System.IO
+@inject HttpClient Http
+@using Newtonsoft.Json;
 
-<h1>ScreenRecorder</h1>
 
-<button @onclick="StartRecording">Start Recording</button>
-<button @onclick="StopRecording">Stop Recording</button>
-
-<video id="preview" autoplay></video>
-<video id="recording" controls></video>
-
-@if (!string.IsNullOrEmpty(logText))
+@if (ShowScreenRecorder)
 {
-    <pre id="log">@logText</pre>
-}
+    <div class=" modals ">
+        <div class="modal-content ">
+            <div class="modal-header">
+                <h5 class="modal-title" id="titleLabel">ScreenRecorder</h5>
+                <button type="button" class="close" @onclick="@Close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        <div class="modal-body">
 
-@if (downloadLinkVisible)
-{
-    <div id="downloadContainer">
-        <a href="@downloadUrl" download="RecordedVideo.webm">Download Video</a>
+            <button @onclick="StartRecording">Start Recording</button>
+            <button @onclick="StopRecording">Stop Recording</button>
+
+            <!-- Adicione um atributo 'ref' ao elemento de vídeo -->
+            <video id="preview" @ref="previewElement" autoplay></video>
+            <video id="recording" controls></video>
+
+            @if (!string.IsNullOrEmpty(logText))
+            {
+                <pre id="log">@logText</pre>
+            }
+
+            @if (downloadLinkVisible)
+            {
+                <div id="downloadContainer">
+                    <a href="@downloadUrl" download="RecordedVideo.webm">Download Video</a>
+                </div>
+            }
+
+            <!--
+            <ScreenCapture @ref="screenCapture" ElementReference="previewElement"></ScreenCapture>
+            -->
+
+        </div>
     </div>
 }
 
-<ScreenCapture @ref="screenCapture"></ScreenCapture>
 
-@code {
-    [Inject]
-    private IJSRuntime JSRuntime { get; set; }
+<style>
 
-    private string logText = "";
-    private bool downloadLinkVisible = false;
-    private string downloadUrl = "";
-    private ScreenCapture screenCapture;
-
-    private async Task Log(string msg)
-    {
-        logText += msg + "\n";
+    .modals {
+        display: flex;
+        margin: 20px;
+        justify-content: flex-start;
+        align-items: center;
+        box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        border: 2px solid black;
+        border-radius: 10px;
     }
-
-    private async Task StartRecording()
-    {
-        var stream = await JSRuntime.InvokeAsync<IJSObjectReference>("navigator.mediaDevices.getDisplayMedia",
-            new { video = true, audio = true });
-
-        await JSRuntime.InvokeVoidAsync("startRecording", stream, 10000, DotNetObjectReference.Create(screenCapture));
-    }
-
-    private async Task StopRecording()
-    {
-        await JSRuntime.InvokeVoidAsync("stopRecording", DotNetObjectReference.Create(screenCapture));
-    }
-
-    [JSInvokable]
-    public void HandleRecordingData(byte[] data)
-    {
-        // Lidar com os dados recebidos aqui
-        Log($"Received {data.Length} bytes of recorded data.");
-
-        // Quando a gravação estiver completa, permita que o usuário faça o download
-        if (data.Length > 0)
-        {
-            CreateBlobAndDownload(data);
-        }
-    }
-
-    private async Task CreateBlobAndDownload(byte[] data)
-    {
-        if (data.Length > 0)
-        {
-            var objectURL = await JSRuntime.InvokeAsync<string>("createBlobAndGetObjectURL", data, "video/webm");
-            downloadUrl = objectURL;
-            downloadLinkVisible = true;
-
-            // Atualiza o estado do componente para re-renderizar a interface do usuário
-            StateHasChanged();
-        }
-    }
-}
+</style>

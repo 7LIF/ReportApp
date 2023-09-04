@@ -51,6 +51,11 @@
 
     }
 
+    @if (showScreenRecorderComponent)
+    {
+        <ScreenRecorder @ref="ScreenRecorder" CloseEventCallback="@ScreenRecorder_OnDialogClose" />
+    }
+
     @if (showBugReportComponent)
     {
         <AddBugReport @ref="AddBugReport" CloseEventCallback="@AddBugReport_OnDialogClose" />

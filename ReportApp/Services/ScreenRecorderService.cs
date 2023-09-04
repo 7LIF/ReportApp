@@ -8,6 +8,9 @@ using static ReportApp.Components.AddScreenRecorder;
 
 public class ScreenRecorderService : IScreenRecorderService
 {
+    private static bool recordingInProgress;
+    private MediaStream currentStream;
+
     private IJSRuntime JSRuntime { get; }
 
     public ScreenRecorderService(IJSRuntime jsRuntime)
@@ -62,8 +65,14 @@ public class ScreenRecorderService : IScreenRecorderService
         }
     }
 
-    public Task StartRecording(MediaStream stream, int lengthInMS, DotNetObjectReference<ScreenRecorder> dotnetRef)
+
+    internal async Task Reset()
     {
-        throw new NotImplementedException();
+        if (recordingInProgress)
+        {
+            await StopRecording(currentStream); // Pare a gravação atual
+            recordingInProgress = false;
+        }
     }
+
 }

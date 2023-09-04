@@ -18,9 +18,18 @@ namespace ReportApp.Shared
         public bool showFeedReportComponent = false;
 
         protected bool isAddBugReportInitialized = false;
+
+        private bool recordingInProgress;
+
+        public IEnumerable<MediaStream> MediaStreams { get; set; }
+
         public IEnumerable<BugReport> BugReports { get; set; }
 
-        public IEnumerable<Feedback> Feedbacks { get; set; }    
+        public IEnumerable<Feedback> Feedbacks { get; set; }
+
+
+        [Inject]
+        public IScreenRecorderService ScreenRecorderService { get; set; }
 
         [Inject]
         public IBugReportDataService BugReportDataService { get; set; }
@@ -30,12 +39,12 @@ namespace ReportApp.Shared
         [Inject]
         public IUserDataService UserDataService { get; set; }
 
+        protected ScreenRecorder ScreenRecorder { get; set; }
         protected AddBugReport AddBugReport { get; set; }
         protected AddFeedbackReport AddFeedbackReport { get; set; }
 
         [Parameter]
         public EventCallback<bool> OnClickEventCallback { get; set; }
-      
 
 
         protected async override Task OnInitializedAsync()
@@ -44,6 +53,11 @@ namespace ReportApp.Shared
 			var Feedbacks = (await FeedbackDataService.GetAllFeedbacks()).ToList();
         }
 
+        public async Task ScreenRecorder_OnDialogClose()
+        {
+            await ScreenRecorderService.ResetMedia();
+            StateHasChanged();
+        }
 
         public async void AddBugReport_OnDialogClose()
         {
@@ -63,10 +77,12 @@ namespace ReportApp.Shared
         private void ToggleMenu()
         {
             showmenu = !showmenu;
-           
+
+            showScreenRecorderComponent = false;
+
             showBugReportComponent = false;
 
-         showFeedReportComponent = false;
+            showFeedReportComponent = false;
         }
 
         //show component screen recorder
@@ -78,7 +94,6 @@ namespace ReportApp.Shared
 
             showScreenRecorderComponent = true;
             StateHasChanged();
-
         }
 
         //show component bug
