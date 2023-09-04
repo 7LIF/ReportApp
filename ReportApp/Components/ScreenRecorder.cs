@@ -68,7 +68,6 @@ namespace ReportApp.Components
             // Custom method to force state update
             public void Refresh()
             {
-                // Replace 'StateHasChanged()' with 'InvokeAsync(StateHasChanged)'
                 InvokeAsync(StateHasChanged);
             }
 
