@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System.Net.Http.Json;
 using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Rendering;
+using ReportApp.Components;
 
 namespace ReportApp.Components
 {
@@ -74,9 +76,6 @@ namespace ReportApp.Components
                 var objectURL = await JSRuntime.InvokeAsync<string>("createBlobAndGetObjectURL", data, "video/webm");
                 downloadUrl = objectURL;
                 downloadLinkVisible = true;
-
-                // Atualiza o estado do componente para re-renderizar a interface do usuário
-                StateHasChanged();
             }
         }
 

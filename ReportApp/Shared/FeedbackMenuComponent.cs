@@ -55,7 +55,7 @@ namespace ReportApp.Shared
 
         public async Task ScreenRecorder_OnDialogClose()
         {
-            await ScreenRecorderService.ResetMedia();
+            await ScreenRecorderService.Reset();
             StateHasChanged();
         }
 
