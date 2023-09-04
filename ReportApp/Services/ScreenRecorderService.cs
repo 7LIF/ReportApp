@@ -8,9 +8,8 @@ using static ReportApp.Components.AddScreenRecorder;
 
 public class ScreenRecorderService : IScreenRecorderService
 {
-    private static bool recordingInProgress;
+    private bool recordingInProgress;
     private MediaStream currentStream;
-
     private IJSRuntime JSRuntime { get; }
 
     public ScreenRecorderService(IJSRuntime jsRuntime)
@@ -20,59 +19,66 @@ public class ScreenRecorderService : IScreenRecorderService
 
     public async Task StartRecording(MediaStream stream, int lengthInMS, DotNetObjectReference<ScreenCapture> dotnetRef)
     {
-        try
+        if (!recordingInProgress)
         {
-            var recorder = await JSRuntime.InvokeAsync<IJSObjectReference>("startRecording", stream, lengthInMS);
-
-            await JSRuntime.InvokeVoidAsync("addEventListener", recorder, "dataavailable", DotNetObjectReference.Create(new
+            try
             {
-                OnDataAvailable = (Func<object, Task>)(async e =>
+                currentStream = stream;
+                var recorder = await JSRuntime.InvokeAsync<IJSObjectReference>("startRecording", stream, lengthInMS);
+
+                await JSRuntime.InvokeVoidAsync("addEventListener", recorder, "dataavailable", DotNetObjectReference.Create(new
                 {
-                    var dataArray = new List<byte>();
-                    var data = await JSRuntime.InvokeAsync<byte[]>("getData", e);
-
-                    if (data.Length > 0)
+                    OnDataAvailable = (Func<object, Task>)(async e =>
                     {
-                        dataArray.AddRange(data);
+                        var dataArray = new List<byte>();
+                        var data = await JSRuntime.InvokeAsync<byte[]>("getData", e);
 
-                        var options = new { type = "video/webm" };
-                        var recordedBlob = await JSRuntime.InvokeAsync<IJSObjectReference>("new Blob", new object[] { new object[] { dataArray.ToArray() }, options });
+                        if (data.Length > 0)
+                        {
+                            dataArray.AddRange(data);
 
-                        var recordingUrl = await JSRuntime.InvokeAsync<string>("createObjectURL", recordedBlob);
+                            var options = new { type = "video/webm" };
+                            var recordedBlob = await JSRuntime.InvokeAsync<IJSObjectReference>("new Blob", new object[] { new object[] { dataArray.ToArray() }, options });
 
-                        await JSRuntime.InvokeVoidAsync("setRecordingSource", recordingUrl);
+                            var recordingUrl = await JSRuntime.InvokeAsync<string>("createObjectURL", recordedBlob);
 
-                        await JSRuntime.InvokeVoidAsync("log", $"Successfully recorded {data.Length} bytes of video/webm media.");
-                    }
-                })
-            }));
-        }
-        catch (Exception ex)
-        {
-            await JSRuntime.InvokeVoidAsync("log", $"Error: {ex.Message}");
+                            await JSRuntime.InvokeVoidAsync("setRecordingSource", recordingUrl);
+
+                            await JSRuntime.InvokeVoidAsync("log", $"Successfully recorded {data.Length} bytes of video/webm media.");
+                        }
+                    })
+                }));
+
+                recordingInProgress = true;
+            }
+            catch (Exception ex)
+            {
+                await JSRuntime.InvokeVoidAsync("log", $"Error: {ex.Message}");
+            }
         }
     }
 
     public async Task StopRecording(MediaStream stream)
     {
-        try
+        if (recordingInProgress)
         {
-            await JSRuntime.InvokeVoidAsync("stopRecording", stream);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error stopping recording: {ex.Message}");
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("stopRecording", stream);
+                recordingInProgress = false;
+            }
+            catch (Exception ex)
+            {
+                await JSRuntime.InvokeVoidAsync("log", $"Error stopping recording: {ex.Message}");
+            }
         }
     }
 
-
-    internal async Task Reset()
+    public async Task Reset()
     {
         if (recordingInProgress)
         {
-            await StopRecording(currentStream); // Pare a gravação atual
-            recordingInProgress = false;
+            await StopRecording(currentStream);
         }
     }
-
 }

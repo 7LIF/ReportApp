@@ -1,11 +1,11 @@
-﻿using Microsoft.JSInterop;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.JSInterop;
 using ReportApp.Shared;
-using ReportApp.Components;
+using static ReportApp.Components.AddScreenRecorder;
 
 public interface IScreenRecorderService
 {
-    Task StartRecording(MediaStream stream, int lengthInMS, DotNetObjectReference<ScreenRecorder> dotnetRef);
+    Task StartRecording(MediaStream stream, int lengthInMS, DotNetObjectReference<ScreenCapture> dotnetRef);
     Task StopRecording(MediaStream stream);
-    Task ResetMedia();
+    Task Reset();
 }
