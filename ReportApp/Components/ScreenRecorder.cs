@@ -43,7 +43,6 @@ namespace ReportApp.Components
             isShowing = true;
             await Task.Delay(10);
             ShowScreenRecorder = isShowing;
-            StateHasChanged();
         }
 
         private void ResetScreenCapture()
@@ -54,7 +53,6 @@ namespace ReportApp.Components
         public void Close()
         {
             ShowScreenRecorder = false;
-            StateHasChanged();
         }
 
         public partial class ScreenCapture : ComponentBase

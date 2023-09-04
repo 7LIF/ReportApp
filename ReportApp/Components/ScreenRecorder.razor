@@ -45,12 +45,12 @@
         var stream = await JSRuntime.InvokeAsync<IJSObjectReference>("navigator.mediaDevices.getDisplayMedia",
             new { video = true, audio = true });
 
-        await JSRuntime.InvokeVoidAsync("startRecording", stream, 10000);
+        await JSRuntime.InvokeVoidAsync("startRecording", stream, 10000, DotNetObjectReference.Create(screenCapture));
     }
 
     private async Task StopRecording()
     {
-        await JSRuntime.InvokeVoidAsync("stopRecording", preview);
+        await JSRuntime.InvokeVoidAsync("stopRecording", DotNetObjectReference.Create(screenCapture));
     }
 
     [JSInvokable]
