@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.JSInterop;
+using Microsoft.EntityFrameworkCore;
 
 namespace ReportApp.Components
 {
@@ -15,7 +17,8 @@ namespace ReportApp.Components
         //Dependencies
         private BugReport BugReport { get; set; } = new BugReport();
         private User User { get; set; } = new User();
-
+        [Inject]
+        private HttpClient HttpClient { get; set; }
         [Inject]
         public IBugReportDataService BugReportDataService { get; set; }
 
@@ -26,15 +29,26 @@ namespace ReportApp.Components
         [Parameter]
         public EventCallback<bool> CloseEventCallback { get; set; }
 
+        [Parameter]
+        public EventCallback<bool> OnRecordingCompleted { get; set; }
+
         private bool isInitialized = false;
         private bool isShowing = false;
         public bool ShowReportForm { get; set; } = false;
-
+        public bool showbugr { get; set; } = true;
+        public bool recording { get; set; } = false;
         private bool AreFieldsFilled => !string.IsNullOrWhiteSpace(User.UserName) &&
                         !string.IsNullOrWhiteSpace(User.Email) &&
                         !string.IsNullOrWhiteSpace(BugReport.Description);
 
+        private string videoData = null;
 
+        [JSInvokable("ReceberVideoData")]
+        public void ReceberVideoData(string data)
+        {
+            videoData = data;
+            StateHasChanged();
+        }
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
@@ -58,7 +72,18 @@ namespace ReportApp.Components
             ShowReportForm = isShowing;
             StateHasChanged();
         }
+        public void ShowR()
+        {
+            recording = true;
+            showbugr = false;
+        }
 
+        public void Back()
+        {
+            recording = false;
+            showbugr = true;
+
+        }
         public void Close()
         {
             ShowReportForm = false;
@@ -77,7 +102,7 @@ namespace ReportApp.Components
             if (!string.IsNullOrWhiteSpace(BugReport.Description))
             {
                 BugReport.UserId = userId;
-                BugReport.AttachmentId = lastAttachmentId; 
+                BugReport.AttachmentId = lastAttachmentId;
 
                 var response = await BugReportDataService.AddBugReport(BugReport);
 
@@ -93,7 +118,7 @@ namespace ReportApp.Components
                     Console.WriteLine($"UserId = {BugReport.UserId},");
                     Console.WriteLine($"AttachmentId = {BugReport.AttachmentId},");
                     Console.WriteLine($"Description = {BugReport.Description},");
-             
+
                 }
             }
             else
@@ -150,8 +175,10 @@ namespace ReportApp.Components
                 return lastAttachmentId;
             }
 
-            return -1; 
+            return -1;
         }
+
+
 
 
         private async Task HandleValidSubmit()
@@ -159,15 +186,16 @@ namespace ReportApp.Components
             var response = await UserDataService.AddUser(User);
 
             await Upload();
+
             ShowReportForm = false;
 
-            // Obtenha o último AttachmentId após a conclusão do upload
+
             int lastAttachmentId = await GetLastAttachmentIdAsync();
 
-            // Exiba o último AttachmentId no console
+
             Console.WriteLine($"Último AttachmentId inserido: {lastAttachmentId}");
 
-            await AddBug(response.UserId, lastAttachmentId); // Passando lastAttachmentId como argumento
+            await AddBug(response.UserId, lastAttachmentId);
             await CloseEventCallback.InvokeAsync(true);
             StateHasChanged();
         }

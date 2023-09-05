@@ -3,41 +3,32 @@
 <!--blazor component with main button, menu and call to the Bug and feedback report-->
 <div class="sidebar">
 
-    <button class="btn @(showmenu == false && (showScreenRecorderComponent == false && showBugReportComponent == false && showFeedReportComponent == false) ? "btnfeed" : "active")" @onclick="ToggleMenu">
+    <button class="btn @(showmenu == false && (showBugReportComponent == false && showFeedReportComponent == false) ? "btnfeed" : "active")" @onclick="ToggleMenu">
         Feedback
     </button>
 
     @if (showmenu == true)
     {
         <div class="menu">
-
-            <div class="imenu" @onclick="QuickRecorder">
+            <div class="imenu" @onclick="QuickAddFeed">
                 <span class="oi oi-document" />
 
                 <div>
-                    <h5>Screen Recording</h5>
-                    <small>Record the bug you found and send it to us</small>
+                    <h5>General feedback</h5>
+                    <small>Give general feedback of this page</small>
                 </div>
-            </div>
 
-            <div class="imenu" @onclick="QuickAddFeed">
-                <span class="oi oi-document" />
-                    
-                    <div>
-                        <h5>General feedback</h5>
-                        <small>Give general feedback of this page</small>
-                    </div>
             </div>
-
             <div class="imenu" @onclick="QuickAddBug">
+
                 <span class="oi oi-bug" />
                 <div>
                     <h5>Report a bug</h5>
                     <small>Let us know what's broken</small>
                 </div>
+
             </div>
-            
-            <!--
+
             <div class="imenu">
                 <span class="oi oi-person" />
                 <div>
@@ -45,15 +36,10 @@
                     <small>Get in touch with us</small>
                 </div>
             </div>
-            -->
+
         </div>
-   
 
-    }
 
-    @if (showScreenRecorderComponent)
-    {
-        <ScreenRecorder @ref="ScreenRecorder" CloseEventCallback="@ScreenRecorder_OnDialogClose" />
     }
 
     @if (showBugReportComponent)
@@ -67,7 +53,7 @@
     }
 
 
-  
+
 </div>
 
 <!--css here tentatively-->
@@ -80,7 +66,7 @@
         width: 450px;
         background-color: transparent;
         background-image: none;
-        height: 60vh;      
+        height: 60vh;
     }
 
     .btnfeed {
@@ -88,20 +74,22 @@
         border: 2px solid black;
     }
 
-    .btnfeed:hover {
-            background-color: black;
-            color: white;
-    }
-    .active {
-        transform: rotate(90deg);
-            background-color:black;
-            color:white;
-     }
-
-        .active:hover{
+        .btnfeed:hover {
             background-color: black;
             color: white;
         }
+
+    .active {
+        transform: rotate(90deg);
+        background-color: black;
+        color: white;
+    }
+
+        .active:hover {
+            background-color: black;
+            color: white;
+        }
+
     .menu {
         display: flex;
         flex-direction: column;
@@ -128,5 +116,3 @@
             font-size: 25px;
         }
 </style>
-
-

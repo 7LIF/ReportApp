@@ -16,7 +16,7 @@ namespace ReportApp.Components
         //Dependencies
         public Feedback Feedback { get; set; } = new Feedback();
         private User User { get; set; } = new User();
-      
+
         [Inject]
         public IFeedbackDataService FeedbackDataService { get; set; }
         [Inject]
@@ -31,7 +31,7 @@ namespace ReportApp.Components
                                 selectedRating > 0;
         public bool ShowReportForm { get; set; }
         public bool Questions { get; set; } = false;
-
+        public bool recording { get; set; } = false;
         public bool ShowformP { get; set; } = true;
 
         private string recommendationInput = string.Empty;
@@ -55,7 +55,18 @@ namespace ReportApp.Components
             ShowReportForm = true;
             StateHasChanged();
         }
+        public void ShowR()
+        {
+            recording = true;
+            ShowformP = false;
+        }
 
+        public void Back()
+        {
+            recording = false;
+            ShowformP = true;
+
+        }
 
         public void Close()
         {
@@ -86,7 +97,7 @@ namespace ReportApp.Components
         }
 
         //Add general feedback
-        private async Task Addfeed(int userId, int lastAttachmentId )
+        private async Task Addfeed(int userId, int lastAttachmentId)
         {
 
             if (!string.IsNullOrWhiteSpace(Feedback.Comments))
@@ -94,8 +105,8 @@ namespace ReportApp.Components
 
                 Feedback.UserId = userId;
                 Feedback.Ranking = selectedRating;
-                Feedback.AttachmentId = lastAttachmentId;   
-               
+                Feedback.AttachmentId = lastAttachmentId;
+
 
                 var response = await FeedbackDataService.AddFeedback(Feedback);
 
@@ -176,7 +187,7 @@ namespace ReportApp.Components
                 return lastAttachmentId;
             }
 
-            return -1; 
+            return -1;
         }
 
 
@@ -184,7 +195,7 @@ namespace ReportApp.Components
         private async Task HandleValidSubmit()
         {
             var response = await UserDataService.AddUser(User);
-           
+
             await Upload();
             ShowReportForm = false;
 

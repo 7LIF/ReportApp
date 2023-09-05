@@ -67,7 +67,7 @@
 							<label class="custom-file-label" for="inputFile">Choose file</label>
 						</div>
 					</div>
-
+					<button @onclick="ShowR" class="btn btn-warning">Screen recording</button>
 					<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
 						@foreach (var item in filesBase64)
 						{
@@ -90,6 +90,12 @@
 
 					<button @onclick="Nextcomponent" class="btn btn-dark" disabled="@(!AreFieldsFilled)">Next</button>
 
+				}
+				@if (recording == true)
+				{
+					<RecordComponent />
+					<button @onclick="Back">Voltar</button>
+					
 				}
 				<!--Page 2 general Questions -->
 				@if (Questions == true)
@@ -129,6 +135,8 @@
 						<button type="submit" class="btn btn-light" style="border:2px solid black; border-radius:5px">Send</button>
 					</EditForm>
 				}
+
+				
 
 				</div>
 		</div>

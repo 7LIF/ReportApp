@@ -1,50 +1,92 @@
-﻿window.startRecording = async function (preview, recording, downloadButton, recordingTimeMS, dotnetRef) {
-    const stream = preview.srcObject;
-    const recorder = new MediaRecorder(stream);
-    const recordedChunks = [];
+﻿let preview = null;
+let mediaRecorder = null;
+let isRecording = false;
+let fileNumber = 1;
+function startRecording() {
+    preview = document.getElementById("preview");
 
-    recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-            recordedChunks.push(event.data);
-        }
-    };
+    navigator.mediaDevices
+        .getDisplayMedia({
+            video: true,
+            audio: true,
+        })
+        .then((stream) => {
+            preview.srcObject = stream;
+            preview.captureStream = preview.captureStream || preview.mozCaptureStream;
 
-    recorder.onstop = () => {
-        const blob = new Blob(recordedChunks, { type: 'video/webm' });
-        const reader = new FileReader();
+            return new Promise((resolve) => (preview.onplaying = resolve));
+        })
+        .then(() => {
+            mediaRecorder = new MediaRecorder(preview.captureStream());
+            const recordedChunks = [];
 
-        reader.onloadend = () => {
-            const data = new Uint8Array(reader.result);
-            dotnetRef.invokeMethodAsync('HandleRecordingData', data);
-        };
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
 
-        reader.readAsArrayBuffer(blob);
-    };
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: "video/webm" });
+                const recording = document.createElement("video");
 
-    recorder.start();
+                recording.src = URL.createObjectURL(blob);
+                recording.controls = true;
+                recording.width = 300;
+                recording.height = 200;
 
-    preview.captureStream = preview.captureStream || preview.mozCaptureStream;
 
-    await new Promise((resolve) => {
-        preview.onplaying = resolve;
-    });
 
-    setTimeout(async () => {
-        if (recorder.state == "recording") {
-            recorder.stop();
-        }
-    }, recordingTimeMS);
-};
+                preview.srcObject = null;
 
-window.stopRecording = function (preview) {
-    const stream = preview.srcObject;
-    const tracks = stream.getTracks();
 
-    tracks.forEach((track) => {
-        track.stop();
-    });
-};
+                document.body.appendChild(recording);
+            };
 
-window.createObjectURL = function (blob) {
-    return URL.createObjectURL(blob);
-};
+            mediaRecorder.start();
+            isRecording = true;
+            setTimeout(() => {
+                if (isRecording) {
+                    stopRecording();
+                    downloadRecording(new Blob(recordedChunks, { type: "video/webm" }));
+                }
+            }, 10000);
+        })
+        .catch((error) => {
+            console.log("Error: " + error.message);
+        });
+}
+
+function downloadRecording(blob) {
+
+    const fileName = `arquivo${fileNumber}.webm`;
+    fileNumber++;
+
+
+    const downloadLink = document.createElement("a");
+    downloadLink.href = URL.createObjectURL(blob);
+    downloadLink.download = fileName;
+
+
+    document.body.appendChild(downloadLink);
+
+
+    downloadLink.click();
+
+
+    setTimeout(() => {
+        document.body.removeChild(downloadLink);
+    }, 100);
+}
+function stopRecording() {
+    if (isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+    }
+}
+
+
+
+
+
+

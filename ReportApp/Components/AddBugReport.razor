@@ -16,6 +16,9 @@
                 </div>
                 <div class="modal-body">
 
+               
+                @if (showbugr)
+                {
                     <EditForm Model="@User">
                         <DataAnnotationsValidator />
                         <ValidationSummary />
@@ -43,14 +46,14 @@
                         <br />
 
                         <div>
-                        <!--File upload-->
+                            <!--File upload-->
                             <div class="input-group">
                                 <div class="custom-file">
                                     <InputFile class="custom-file-input" multiple OnChange="OnChange" accept="image/jpeg, image/png, image/gif, video/*" id="inputFile" />
                                     <label class="custom-file-label" for="inputFile">Choose file</label>
                                 </div>
                             </div>
-
+                            <button @onclick="ShowR" class="btn btn-warning">Screen recording</button>
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
                                 @foreach (var item in filesBase64)
                                 {
@@ -70,14 +73,23 @@
                                 }
                             </div>
                         </div>
-
-                    <button type="submit" class="btn btn-light" disabled="@(!AreFieldsFilled)" style="border:2px solid black; border-radius:5px">Send</button>
+                        <br/>
+                        <button type="submit" class="btn btn-light" disabled="@(!AreFieldsFilled)" style="border:2px solid black; border-radius:5px">Send</button>
                     </EditForm>
+                }
+
+                @if (recording == true)
+                {
+                    <RecordComponent />
+                    <button @onclick="Back">Voltar</button>
+                  
+                }
                  </div>
             </div>
 </div>
 
 }
+
 
 <style>
    

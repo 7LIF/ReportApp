@@ -1,0 +1,75 @@
+﻿
+@using Microsoft.JSInterop
+@using System.Threading.Tasks
+<div>
+   
+    <div class="left">
+        <div id="startButton" class="button" @onclick="StartRecording">
+            Go
+        </div>
+        <h2>Preview</h2>
+        <video id="preview" width="300" height="200" autoplay muted></video>
+    </div>
+</div>
+
+@code {
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; }
+
+    private async Task StartRecording()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("startRecording");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro: {ex.Message}");
+        }
+    }
+}
+        <style>
+
+             video {
+                
+                 border: 1px solid black;
+             }
+
+
+             .button {
+                 cursor: pointer;
+                 display: block;
+                 width: 160px;
+                 border: 1px solid black;
+                 font-size: 16px;
+                 text-align: center;
+                 padding-top: 2px;
+                 padding-bottom: 4px;
+                 color: black;
+              
+                 text-decoration: none;
+             }
+
+             h2 {
+                 margin-bottom: 4px;
+             }
+
+             .left {
+                 margin-right: 10px;
+                 float: left;
+                 width: 300px;
+                 padding: 0px;
+             }
+
+             .right {
+                 margin-left: 10px;
+                 float: left;
+                 width: 160px;
+                 padding: 0px;
+             }
+
+             .bottom {
+                 clear: both;
+                 padding-top: 10px;
+             }
+        </style>
